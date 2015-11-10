@@ -10,25 +10,11 @@
       with_items:
         - apt-transport-https
         - software-properties-common
-
     - name: Register apt repos
       sudo: yes
       apt_repository: repo='{{item}}' update_cache=yes state=present
       with_items:
         - ppa:ubuntu-toolchain-r/test
-        - ppa:webupd8team/java
-
-    - name: Auto accept oracle jdk license
-      sudo: yes
-      shell: echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections
-
-    - name: Make SBT available for install
-      sudo: yes
-      shell: echo "deb https://dl.bintray.com/sbt/debian /" | tee /etc/apt/sources.list.d/sbt.list
-
-    - name: Check GPG key for SBT debian
-      sudo: yes
-      shell: apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 642AC823
 
     - name: Install apt packages
       sudo: yes
@@ -67,12 +53,8 @@
         - lttng-tools
         - liblttng-ust0
         - zookeeperd
-        - sbt
         - python-setuptools
-        - oracle-java8-installer
         - ca-certificates
-        - ruby2.0
-        - ruby2.0-dev
         - graphviz
         - scons
         - g++-5
@@ -81,6 +63,14 @@
     - name: Install pip
       sudo: yes
       shell: easy_install pip creates=/usr/local/bin/pip
+
+    - name: Install python-dependencies
+      sudo: yes
+      apt: state=present name={{item}} update_cache=yes
+      with_items:
+        - python-scipy
+        - python-numpy
+        - python-pandas
 
     - name: Install custom libs
       sudo: yes
@@ -140,31 +130,6 @@
       with_items:
         - {name: 'concord-py', version: '0.3.1'}
         - {name: 'concord', version: '0.1.11'}
-
-    - name: install virtualenv
-      sudo: yes
-      pip: state=present name=virtualenv
-
-    - name: uninstall concord ruby2.0 gem
-      sudo: yes
-      gem:
-        state=absent
-        name='{{item.name}}'
-        version='{{item.version}}'
-        executable=/usr/bin/gem2.0
-      ignore_errors: yes
-      with_items:
-        - {name: 'concord-ruby', version: '0.3.0'}
-
-    - name: install concord ruby2.0 gem
-      sudo: yes
-      gem:
-        state=present
-        name='{{item.name}}'
-        version='{{item.version}}'
-        executable=/usr/bin/gem2.0
-      with_items:
-        - {name: 'concord-ruby', version: '0.3.1'}
 
     - name: Fetch and install latest concord binary
       sudo: yes
